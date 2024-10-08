@@ -2,13 +2,13 @@
 
 import streamlit as st
 from data_processing import load_data
-from left_rfm_analytics import display_rfm_analysis
+from left_rfm_analytics import display_rfm_analysis2
 from middle_visualization import display_map
 from right_module import display_summary
 from login import login_screen
 
 # 데이터 경로 설정
-raw_path = './data/'
+raw_path = '/Users/heekyungkim/KPMG_Project/archive/' 
 
 # 데이터 로드 및 전처리
 df_orders_items = load_data(raw_path)
@@ -30,7 +30,7 @@ if seller_id_input:  # 로그인 화면에서 입력이 있을 때만 실행
 
         # 왼쪽: RFM 분석
         with col1:
-            display_rfm_analysis(df_orders_items, seller_id_input)
+            display_rfm_analysis2(df_orders_items, seller_id_input)
 
         # 가운데: 판매자 위치 및 지도
         with col2:
