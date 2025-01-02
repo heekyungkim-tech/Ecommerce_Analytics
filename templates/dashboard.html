@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>판매자 대시보드</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Noto Sans 폰트 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-size: .875rem;
+            background-color: #f8f9fa;
+            background-image: url("{{ url_for('static', filename='images/dashboard_main.jpg') }}");
+            background-size: cover; /* 이미지가 화면을 덮도록 설정 */
+            background-position: center; /* 이미지 가운데 정렬 */
+            background-repeat: no-repeat; /* 반복되지 않도록 설정 */
+            font-family: 'Noto Sans', sans-serif; /* Noto Sans 폰트 적용 */
+            color: #1A2421 !important; /* 폰트 색상 추가 */
+            font-weight: bold; /* 텍스트를 볼드체로 설정 */
+
+        }
+
+        .navbar-dark {
+            background-color: rgba(26, 36, 33, 0.5) !important; /* 투명도 추가 */
+        }
+
+        /* 사이드바 스타일 수정 */
+        .sidebar {
+            top: 40px; 
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 95px;  /* 텍스트를 감싸는 정도의 폭 */
+            padding: 10px 0;
+            background-color: rgba(26, 36, 33, 0.2); /* 반투명 배경 */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 텍스트를 가운데 정렬 */
+        }
+
+        .sidebar a {
+            color: #1A2421;
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 14px;
+            text-align: center; /* 텍스트 가운데 정렬 */
+            display: block;
+            width: 100%;
+        }
+        
+        .sidebar a:hover {
+            background-color: #1A2421; /* 마우스 오버 시 강조 */
+            border-radius: 15px; /* 텍스트를 감싸는 둥근 효과 */
+            color: #ffffcf; /* 폰트 색상을 흰색으로 설정 */
+        }
+
+        /* 카드 스타일 수정 */
+        .main-content {
+            margin-left: 80px; /* 사이드바 폭에 맞춤 */
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2); /* 그림자 효과 추가 */
+            height: 400px; /* 카드 높이 증가 */
+            overflow: hidden; /* 내용물이 넘치지 않도록 */
+            border-radius: 15px; /* 카드의 둥근 테두리 */
+            background-color: rgba(255, 255, 255, 0.9); /* 카드 투명도 조절 */
+        }
+
+        .card-body {
+            padding: 20px;
+            overflow-y: auto; /* 내용물이 넘치면 스크롤 가능하게 */
+            max-height: 100%; /* 카드 안에서 최대 높이 제한 */
+        }
+
+        .chart-content {
+            height: 80%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* 차트가 넘치지 않도록 */
+            border-radius: 15px; /* 차트의 둥근 테두리 */
+        }
+
+        .card-title {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1.25rem;
+            color: #01394a; /* 폰트 색상 변경 */
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: #6c757d; /* 작은 설명 폰트 색상 변경 */
+        }
+
+        #map {
+            width: 100%;
+            height: 100%; /* 지도가 카드 안에 꽉 차도록 설정 */
+            border-radius: 15px; /* 맵의 둥근 테두리 */
+        }
+
+        .map-container {
+            width: 100%;
+            height: 400px; /* 지도의 높이를 적절하게 설정 */
+            margin-top: 20px;
+        }
+
+        .card-footer {
+            background-color: #f1f1f1;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            border-top: 1px solid #ddd;
+        }
+
+        .large-card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1); /* 그림자 효과 추가 */
+            height: 200px; /* 카드 높이 감소 */
+            overflow: hidden; /* 내용물이 넘치지 않도록 */
+            border-radius: 15px; /* 카드의 둥근 테두리 */
+            background-color: rgba(255, 255, 255, 0.8); /* 카드 투명도 조절 */
+            width: 70%; /* 넓은 카드 크기 조정 */
+        }
+
+
+        .search-card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1); /* 그림자 효과 추가 */
+            height: 200px; /* 카드 높이를 large-card와 동일하게 설정 */
+            overflow: hidden; /* 내용물이 넘치지 않도록 */
+            border-radius: 15px; /* 카드의 둥근 테두리 */
+            background-color: rgba(255, 255, 255, 0.8); /* 카드 투명도 조절 */
+            width: 300px;
+            display: inline-block;
+            vertical-align: top;
+            margin-left: 20px;
+        }
+    </style>
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCoXQK8Gk8JgHZeiWlXMC8LQBVEQYrwHyk"></script>
+</head>
+<body>
+
+    <!-- 상단 네비게이션 바 -->
+    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="#">MARKETCODE</a>
+        <div class="navbar-nav">
+            <div class="nav-item text-nowrap">
+                <a class="nav-link px-3" href="http://127.0.0.1:5000/">로그아웃</a> <!-- 로그아웃 링크 복원 -->
+            </div>
+        </div>
+    </nav>
+
+<!-- 사이드바 -->
+<div class="sidebar">
+    <div class="sidebar-sticky">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="/dashboard?seller_id={{ seller_id }}">대시보드</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/customer_analysis?seller_id={{ seller_id }}">고객 분석</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/delivery_analysis?seller_id={{ seller_id }}">배송 분석</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/seller_analysis?seller_id={{ seller_id }}">판매자 분석</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+
+        <div class="row">
+            <!-- 고객 등급별 분포 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="chart-content">
+                            {{ rfm_pie_chart | safe }}
+                        </div>
+                        <h3 class="card-title">고객 등급별 분포</h3>
+                        <p class="card-subtitle">고객의 등급별 분포 현황을 보여줍니다.</p>
+                    </div>
+                    <div class="card-footer">
+                        2024년 10월 11일 업데이트
+                    </div>
+                </div>
+            </div>
+
+            <!-- 배송 현황 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="chart-content">
+                            <div id="map"></div> <!-- 구글 맵이 렌더링될 div -->
+                        </div>
+                        <h3 class="card-title">배송 현황</h3>
+                        <p class="card-subtitle">현재 배송 상태와 위치를 표시합니다.</p>
+                    </div>
+                    <div class="card-footer">
+                        2024년 10월 9일 업데이트
+                    </div>
+                </div>
+            </div>
+
+            <!-- 판매자 위치 카드 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="chart-content">
+                            {{ plot_html | safe }}
+                        </div>
+                        <h3 class="card-title">판매자 위치</h3>
+                        <p class="card-subtitle">판매자의 위치 정보를 시각화합니다.</p>
+                    </div>
+                    <div class="card-footer">
+                        2024년 10월 10일 업데이트
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="large-card">
+            <div class="card-body">
+                <h3 class="card-title">월 판매량 예측 모델 ver. 1</h3>
+                <p class="card-subtitle">Office_furniture : 93%</p>
+                <p class="card-text">
+                    <strong>예측 정확도:</strong> 93%<br>
+                    <strong>모델 설명:</strong> 이 모델은 과거 데이터를 기반으로 하여 사무용 가구의 월간 판매량을 예측합니다.<br>
+                    <strong>최근 업데이트:</strong> 2024년 10월 11일<br>
+                    <strong>주요 개선점:</strong> 최신 알고리즘 적용 및 데이터 정규화로 예측 정확도 5% 향상.<br>
+                    <strong>적용 데이터:</strong> 2016년 10월 ~ 2018년 10월 판매 데이터<br>
+                    <strong>향후 업데이트:</strong> 다른 제품 카테고리에 대한 예측 기능 추가 예정.
+                </p>
+            </div>
+        </div>
+
+        <!-- 돋보기 모양의 검색 카드 (large-card 오른쪽) -->
+        <div class="search-card">
+            <input type="text" class="search-input" placeholder="검색어를 입력하세요">
+        </div>
+
+    <script>
+        // Flask에서 전달된 데이터
+        var sellerLocation = {{ seller_location | tojson }};
+        var customerLocations = {{ customer_locations | tojson }};
+
+        // 구글 맵 초기화
+        function initMap() {
+            var mapOptions = {
+                center: { lat: sellerLocation.lat, lng: sellerLocation.lng },
+                zoom: 5
+            };
+            var map = new google.maps.Map(document.getElementById('map'), mapOptions);
+
+            // 판매자 위치에 빨간 핀 추가
+            var sellerMarker = new google.maps.Marker({
+                position: sellerLocation,
+                map: map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 8,
+                    fillColor: 'red',
+                    fillOpacity: 1,
+                    strokeWeight: 0
+                }
+            });
+
+            // 고객 위치에 파란색 핀 추가
+            customerLocations.forEach(function(customer) {
+                var customerMarker = new google.maps.Marker({
+                    position: customer,
+                    map: map,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 4,
+                        fillColor: '#567795',
+                        fillOpacity: 0.7,
+                        strokeWeight: 0
+                    }
+                });
+
+                // 판매자 -> 고객 간의 경로 추가 (녹색 선)
+                var line = new google.maps.Polyline({
+                    path: [sellerLocation, customer],
+                    geodesic: true,
+                    strokeColor: "#3CB371",
+                    strokeOpacity: 1.0,
+                    strokeWeight: 3
+                });
+                line.setMap(map);
+            });
+        }
+
+        // 페이지 로드 시 구글 맵 초기화 함수 호출
+        window.onload = initMap;
+    </script>
+</body>
+</html>
